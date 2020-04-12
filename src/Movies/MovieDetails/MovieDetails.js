@@ -15,15 +15,6 @@ import debounce from 'lodash/debounce'
 const useStyles = (theme) => ({
     inputContainer: {
         marginBottom: '30px'
-    },
-    chipContainer: {
-        display: 'flex',
-        flexWrap: 'wrap',
-        '& > *': {
-            margin: theme.spacing(0.5),
-        },
-        width: '100%',
-        minHeight: ''
     }
 });
 
@@ -173,7 +164,7 @@ class MovieDetails extends React.Component {
     }
 
     renderModalBody() {
-        const { movie, classes, handleClose } = this.props
+        const { movie, classes, handleClose, deleteMovie } = this.props
 
         if (movie) {
             return (
@@ -209,7 +200,7 @@ class MovieDetails extends React.Component {
                         <Button variant="contained" onClick={handleClose} color="primary">
                             Save Changes
                         </Button>
-                        <Button variant="contained" onClick={handleClose} color="secondary">
+                        <Button variant="contained" onClick={deleteMovie} color="secondary">
                             Delete
                         </Button>
                     </DialogActions>
