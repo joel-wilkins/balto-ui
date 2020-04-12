@@ -10,14 +10,19 @@ import {
     TableCell,
     TableBody,
     TablePagination,
-    withStyles
+    withStyles,
+    TextField
 } from '@material-ui/core';
 import MovieDetails from './MovieDetails/MovieDetails';
+import debounce from 'lodash/debounce';
 
 const useStyles = theme => ({
     table: {
         minWidth: 650,
     },
+    searchBox: {
+        marginLeft: "10px"
+    }
 });
 
 class MovieList extends React.Component {
@@ -38,6 +43,8 @@ class MovieList extends React.Component {
         plot: ''
     }
 
+    searchFunction = null;
+
     constructor(props) {
         super(props);
         this.state = {
@@ -46,27 +53,22 @@ class MovieList extends React.Component {
             results: [],
             detailsOpen: false,
             selectedMovie: null,
-            movieCount: 0
+            movieCount: 0,
+            searchTerm: ''
         }
     }
 
     async componentDidMount() {
-        await this.loadMovies(1, 10);
+        await this.loadMovies(1, 10, '');
     }
 
-    async loadMovies(page, size) {
-        const movies = service.getMovies(page, size)
-        const movieCount = this.loadMovieCount();
+    async loadMovies(page, size, searchTerm) {
+        const movies = service.getMovies(page, size, searchTerm);
         this.setState({
-            results: await movies,
+            results: (await movies),
             page,
-            size,
-            movieCount: await movieCount
+            size
         });
-    }
-
-    async loadMovieCount() {
-        return await service.getMovieCount();
     }
 
     async openMovieDetails(movieId) {
@@ -93,14 +95,14 @@ class MovieList extends React.Component {
     }
 
     handleChangePage = async (event, newPage) => {
-        const { size } = this.state
-        await this.loadMovies(newPage + 1, size);
+        const { size, searchTerm } = this.state
+        await this.loadMovies(newPage + 1, size, searchTerm);
     }
 
     handleChangeRowsPerPage = async (event) => {
         const pageSize = parseInt(event.target.value, 10);
-        const { page } = this.state;
-        await this.loadMovies(page, pageSize)
+        const { page, searchTerm } = this.state;
+        await this.loadMovies(page, pageSize, searchTerm)
     }
 
     selectedMovieUpdated = updatedMovie => {
@@ -129,13 +131,27 @@ class MovieList extends React.Component {
         await this.loadMovies(page, size);
     }
 
+    changeSearchTerm = event => {
+        this.setState({
+            searchTerm: event.target.value
+        });
+        if (!this.searchFunction) {
+            this.searchFunction = debounce(async () => {
+                const { page, size, searchTerm } = this.state;
+                this.loadMovies(page, size, searchTerm);
+            }, 250);
+        }
+        this.searchFunction();
+    }
+
     render() {
         const { classes, newDialogOpen } = this.props;
-        const { page, size, detailsOpen, selectedMovie, movieCount } = this.state
+        const { page, size, detailsOpen, selectedMovie, searchTerm } = this.state
+
         return (
             <React.Fragment>
                 <Paper>
-
+                    <TextField className={classes.searchBox} value={searchTerm} label="Search" onChange={this.changeSearchTerm}></TextField>
                     <TableContainer>
                         <Table className={classes.table}>
                             <TableHead>
@@ -154,7 +170,7 @@ class MovieList extends React.Component {
                     <TablePagination
                         rowsPerPageOptions={[5, 10, 25]}
                         component="div"
-                        count={movieCount}
+                        count={-1}
                         rowsPerPage={size}
                         page={page === 0 ? page : page - 1}
                         onChangePage={this.handleChangePage}
