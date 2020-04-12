@@ -4,7 +4,6 @@ import MovieSummary from './MovieSummary/MovieSummary';
 import {
     TableContainer,
     Paper,
-    makeStyles,
     Table,
     TableHead,
     TableRow,
@@ -15,11 +14,11 @@ import {
 } from '@material-ui/core';
 import MovieDetails from './MovieDetails/MovieDetails';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = theme => ({
     table: {
         minWidth: 650,
     },
-}));
+});
 
 class MovieList extends React.Component {
     constructor(props) {
@@ -29,7 +28,8 @@ class MovieList extends React.Component {
             size: 10,
             results: [],
             detailsOpen: false,
-            selectedMovie: null
+            selectedMovie: null,
+            movieCount: 0
         }
     }
 
@@ -38,12 +38,18 @@ class MovieList extends React.Component {
     }
 
     async loadMovies(page, size) {
-        const movies = await service.getMovies(page, size)
+        const movies = service.getMovies(page, size)
+        const movieCount = this.loadMovieCount();
         this.setState({
-            results: movies,
+            results: await movies,
             page,
-            size
+            size,
+            movieCount: await movieCount
         });
+    }
+
+    async loadMovieCount() {
+        return await service.getMovieCount();
     }
 
     async openMovieDetails(movieId) {
@@ -86,7 +92,7 @@ class MovieList extends React.Component {
 
     render() {
         const { classes } = this.props;
-        const { page, size, detailsOpen, selectedMovie } = this.state
+        const { page, size, detailsOpen, selectedMovie, movieCount } = this.state
         return (
             <React.Fragment>
                 <Paper>
@@ -98,8 +104,7 @@ class MovieList extends React.Component {
                                     <TableCell>Year</TableCell>
                                     <TableCell>Title</TableCell>
                                     <TableCell>Genre</TableCell>
-                                    <TableCell>Director(s)</TableCell>
-                                    <TableCell>Cast</TableCell>
+                                    <TableCell>Wiki</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -110,7 +115,7 @@ class MovieList extends React.Component {
                     <TablePagination
                         rowsPerPageOptions={[5, 10, 25]}
                         component="div"
-                        count={1000}
+                        count={movieCount}
                         rowsPerPage={size}
                         page={page === 0 ? page : page - 1}
                         onChangePage={this.handleChangePage}

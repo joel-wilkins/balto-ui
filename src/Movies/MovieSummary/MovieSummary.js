@@ -1,10 +1,14 @@
 import React from 'react';
-import { TableCell, TableRow, makeStyles } from '@material-ui/core';
+import { TableCell, TableRow, makeStyles, Link, Typography } from '@material-ui/core';
 
 const useStyles = makeStyles((theme) => ({
     tableRow: {
         cursor: 'pointer',
     },
+    linkCell: {
+        maxWidth: '300px',
+        overflow: 'hidden'
+    }
 }));
 
 function MovieSummary(props) {
@@ -19,15 +23,14 @@ function MovieSummary(props) {
                 {movie.title}
             </TableCell>
             <TableCell>
-                {movie.genre_id}
+                {movie.genre.genre}
             </TableCell>
-            <TableCell>
-                Placeholder
+            <TableCell className={classes.linkCell}>
+                <Typography>
+                    <Link href={movie.wikipedia_link} target="none" color="secondary">{movie.wikipedia_link}</Link>
+                </Typography>
             </TableCell>
-            <TableCell>
-                Placeholder
-            </TableCell>
-        </TableRow>
+        </TableRow >
     );
 }
 
