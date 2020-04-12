@@ -72,10 +72,17 @@ class MovieDetails extends React.Component {
         }))
     };
 
-    handleCastChange = event => {
+    handleCastChange = (event, value, reason) => {
         const { movie, movieUpdated } = this.props;
         movieUpdated(Object.assign({}, movie, {
-            cast: event.target.value
+            cast: value
+        }))
+    }
+
+    handleDirectorChange = (event, value, reason) => {
+        const { movie, movieUpdated } = this.props;
+        movieUpdated(Object.assign({}, movie, {
+            directors: value
         }))
     }
 
@@ -120,13 +127,13 @@ class MovieDetails extends React.Component {
         return (
             <Autocomplete
                 multiple
-                autoComplete
                 includeInputInList
                 options={cast}
                 freeSolo
                 filterOptions={(x) => x}
+                onChange={this.handleCastChange}
                 getOptionLabel={(option) => option.full_name}
-                defaultValue={movie.cast}
+                value={movie.cast}
                 renderInput={(params) => (
                     <TextField
                         {...params}
@@ -144,12 +151,12 @@ class MovieDetails extends React.Component {
         return (
             <Autocomplete
                 multiple
-                autoComplete
                 includeInputInList
+                onChange={this.handleDirectorChange}
                 options={directors}
                 filterOptions={(x) => x}
                 freeSolo
-                defaultValue={movie.directors}
+                value={movie.directors}
                 getOptionLabel={(option) => option.full_name}
                 renderInput={(params) => (
                     <TextField
@@ -164,7 +171,7 @@ class MovieDetails extends React.Component {
     }
 
     renderModalBody() {
-        const { movie, classes, handleClose, deleteMovie } = this.props
+        const { movie, classes, deleteMovie, updateMovie } = this.props
 
         if (movie) {
             return (
@@ -197,7 +204,7 @@ class MovieDetails extends React.Component {
                         </div>
                     </DialogContent>
                     <DialogActions>
-                        <Button variant="contained" onClick={handleClose} color="primary">
+                        <Button variant="contained" onClick={updateMovie} color="primary">
                             Save Changes
                         </Button>
                         <Button variant="contained" onClick={deleteMovie} color="secondary">

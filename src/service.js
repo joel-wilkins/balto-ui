@@ -13,6 +13,16 @@ const service = {
         })
         return result.status;
     },
+    async updateMovie(movie) {
+        const result = await fetch(endpoints.movie(movie.id), {
+            method: 'PUT',
+            body: JSON.stringify(movie),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        return result.status;
+    },
     async getMovieCount() {
         const result = await fetch(endpoints.movieCount);
         return await result.json();
@@ -24,7 +34,7 @@ const service = {
     async findDirectors(query) {
         const result = await fetch(endpoints.findDirectors(query));
         return await result.json();
-    }
+    },
 }
 
 
