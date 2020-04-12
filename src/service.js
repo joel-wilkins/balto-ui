@@ -1,6 +1,6 @@
 const service = {
-    async getMovies(page, pageSize) {
-        const result = await fetch(endpoints.movies(page, pageSize));
+    async getMovies(page, pageSize, searchTerm) {
+        const result = await fetch(endpoints.movies(page, pageSize, searchTerm));
         return await result.json();
     },
     async getMovieDetails(movieId) {
@@ -33,8 +33,8 @@ const service = {
         });
         return await result.json();
     },
-    async getMovieCount() {
-        const result = await fetch(endpoints.movieCount);
+    async getMovieCount(searchTerm) {
+        const result = await fetch(endpoints.movieCount(searchTerm));
         return await result.json();
     },
     async findCast(query) {
@@ -59,9 +59,9 @@ const rootUrl = 'http://localhost:5000';
 
 const endpoints = {
     movieRootUrl: `${rootUrl}/movies`,
-    movies: (page, pageSize) => `${rootUrl}/movies?page=${page}&page_size=${pageSize}`,
+    movies: (page, pageSize, searchTerm) => `${rootUrl}/movies?page=${page}&page_size=${pageSize}&query=${searchTerm}`,
     movie: id => `${rootUrl}/movies/${id}`,
-    movieCount: `${rootUrl}/movies/count`,
+    movieCount: query => `${rootUrl}/movies/count?query=${query}`,
     findCast: query => `${rootUrl}/cast?query=${query}`,
     findDirectors: query => `${rootUrl}/directors?query=${query}`,
     findGenres: query => `${rootUrl}/genres?query=${query}`,
