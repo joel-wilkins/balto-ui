@@ -15,28 +15,35 @@ import debounce from 'lodash/debounce'
 const useStyles = (theme) => ({
     inputContainer: {
         marginBottom: '30px'
-    },
-    chipContainer: {
-        display: 'flex',
-        flexWrap: 'wrap',
-        '& > *': {
-            margin: theme.spacing(0.5),
-        },
-        width: '100%',
-        minHeight: ''
     }
 });
 
 class MovieDetails extends React.Component {
     castFunction = null;
+    directorFunction = null;
+    genreFunction = null;
 
     constructor(props) {
         super(props);
         this.state = {
             cast: [],
-            directors: []
+            directors: [],
+            origins: [],
+            genres: []
         }
     }
+
+    async componentDidMount() {
+        await this.loadOrigins();
+    }
+
+    async loadOrigins() {
+        const origins = await service.getOrigins();
+        this.setState({
+            origins
+        })
+    }
+
     updateMovieTitle = event => {
         const { movie, movieUpdated } = this.props;
         movieUpdated(Object.assign({}, movie, {
@@ -51,12 +58,10 @@ class MovieDetails extends React.Component {
         }))
     };
 
-    updateMovieGenre = event => {
+    updateMovieGenre = (event, value, reason) => {
         const { movie, movieUpdated } = this.props;
         movieUpdated(Object.assign({}, movie, {
-            genre: Object.assign({}, movie.genre, {
-                genre: event.target.value
-            })
+            genre: Object.assign({}, value)
         }))
     };
 
@@ -67,24 +72,31 @@ class MovieDetails extends React.Component {
         }))
     };
 
-    updateMovieOrigin = event => {
+    updateMovieOrigin = (event, value, reason) => {
         const { movie, movieUpdated } = this.props;
         movieUpdated(Object.assign({}, movie, {
-            origin_id: event.target.value
+            origin: value
         }))
     };
 
-    updateMovieOrigin = event => {
+    updateMoviePlot = event => {
         const { movie, movieUpdated } = this.props;
         movieUpdated(Object.assign({}, movie, {
             plot: event.target.value
         }))
     };
 
-    handleCastChange = event => {
+    handleCastChange = (event, value, reason) => {
         const { movie, movieUpdated } = this.props;
         movieUpdated(Object.assign({}, movie, {
-            cast: event.target.value
+            cast: value
+        }))
+    }
+
+    handleDirectorChange = (event, value, reason) => {
+        const { movie, movieUpdated } = this.props;
+        movieUpdated(Object.assign({}, movie, {
+            directors: value
         }))
     }
 
@@ -96,10 +108,12 @@ class MovieDetails extends React.Component {
 
         if (!this.castFunction) {
             this.castFunction = debounce(async () => {
-                const cast = await service.findCast(event.target.value);
-                this.setState({
-                    cast: cast.slice(0, 50)
-                })
+                if (event && event.target && event.target.value) {
+                    const cast = await service.findCast(event.target.value);
+                    this.setState({
+                        cast: cast.slice(0, 50)
+                    })
+                }
             }, 250);
         }
 
@@ -114,28 +128,51 @@ class MovieDetails extends React.Component {
 
         if (!this.directorFunction) {
             this.directorFunction = debounce(async () => {
-                const directors = await service.findDirectors(event.target.value);
-                this.setState({
-                    directors: directors.slice(0, 50)
-                })
+                if (event && event.target && event.target.value) {
+                    const directors = await service.findDirectors(event.target.value);
+                    this.setState({
+                        directors: directors.slice(0, 50)
+                    })
+                }
             }, 250);
         }
 
         this.directorFunction();
     }
 
+    autocompleteGenre = event => {
+        if (event.target.value.length < 3) {
+            return;
+        }
+        event.persist();
+
+        if (!this.genreFunction) {
+            this.genreFunction = debounce(async () => {
+                if (event && event.target && event.target.value) {
+                    const genres = await service.findGenres(event.target.value);
+                    this.setState({
+                        genres: genres.slice(0, 50)
+                    })
+                }
+            }, 250)
+        }
+
+        this.genreFunction();
+    }
+
     renderCast(movie) {
         const { cast } = this.state;
         return (
             <Autocomplete
-                multiple
                 autoComplete
+                multiple
                 includeInputInList
                 options={cast}
                 freeSolo
                 filterOptions={(x) => x}
+                onChange={this.handleCastChange}
                 getOptionLabel={(option) => option.full_name}
-                defaultValue={movie.cast}
+                value={movie.cast}
                 renderInput={(params) => (
                     <TextField
                         {...params}
@@ -152,13 +189,14 @@ class MovieDetails extends React.Component {
         const { directors } = this.state;
         return (
             <Autocomplete
-                multiple
                 autoComplete
+                multiple
                 includeInputInList
+                onChange={this.handleDirectorChange}
                 options={directors}
                 filterOptions={(x) => x}
                 freeSolo
-                defaultValue={movie.directors}
+                value={movie.directors}
                 getOptionLabel={(option) => option.full_name}
                 renderInput={(params) => (
                     <TextField
@@ -172,8 +210,55 @@ class MovieDetails extends React.Component {
         )
     }
 
+    renderGenre(movie) {
+        const { genres } = this.state;
+        return (
+            <Autocomplete
+                autoComplete
+                includeInputInList
+                onChange={this.updateMovieGenre}
+                options={genres}
+                filterOptions={(x) => x}
+                freeSolo
+                value={movie.genre}
+                getOptionLabel={(option) => option.genre}
+                renderInput={(params) => (
+                    <TextField
+                        {...params}
+                        variant="standard"
+                        label="Genre"
+                        onChange={this.autocompleteGenre}
+                    />
+                )}
+            />
+        )
+    }
+
+    renderOrigin(movie) {
+        const { origins } = this.state;
+        return (
+            <Autocomplete
+                autoComplete
+                includeInputInList
+                onChange={this.updateMovieOrigin}
+                options={origins}
+                filterOptions={(x) => x}
+                freeSolo
+                value={movie.origin}
+                getOptionLabel={(option) => option.origin}
+                renderInput={(params) => (
+                    <TextField
+                        {...params}
+                        variant="standard"
+                        label="Origin"
+                    />
+                )}
+            />
+        )
+    }
+
     renderModalBody() {
-        const { movie, classes, handleClose } = this.props
+        const { movie, classes, deleteMovie, updateMovie } = this.props
 
         if (movie) {
             return (
@@ -187,13 +272,13 @@ class MovieDetails extends React.Component {
                             <TextField label="Year" fullWidth value={movie.release_year} onChange={this.updateMovieYear}></TextField>
                         </div>
                         <div className={classes.inputContainer}>
-                            <TextField label="Genre" fullWidth value={movie.genre.genre} onChange={this.updateMovieGenre}></TextField>
+                            {this.renderGenre(movie)}
                         </div>
                         <div className={classes.inputContainer}>
                             <TextField label="Wikipedia Link" fullWidth value={movie.wikipedia_link} onChange={this.updateMovieLink}></TextField>
                         </div>
                         <div className={classes.inputContainer}>
-                            <TextField label="Origin" fullWidth value={movie.origin.origin} onChange={this.updateMovieOrigin}></TextField>
+                            {this.renderOrigin(movie)}
                         </div>
                         <div className={classes.inputContainer}>
                             {this.renderCast(movie)}
@@ -206,10 +291,10 @@ class MovieDetails extends React.Component {
                         </div>
                     </DialogContent>
                     <DialogActions>
-                        <Button variant="contained" onClick={handleClose} color="primary">
+                        <Button variant="contained" onClick={updateMovie} color="primary">
                             Save Changes
                         </Button>
-                        <Button variant="contained" onClick={handleClose} color="secondary">
+                        <Button disabled={!movie.id} variant="contained" onClick={deleteMovie} color="secondary">
                             Delete
                         </Button>
                     </DialogActions>
