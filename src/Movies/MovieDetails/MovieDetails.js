@@ -108,10 +108,12 @@ class MovieDetails extends React.Component {
 
         if (!this.castFunction) {
             this.castFunction = debounce(async () => {
-                const cast = await service.findCast(event.target.value);
-                this.setState({
-                    cast: cast.slice(0, 50)
-                })
+                if (event && event.target && event.target.value) {
+                    const cast = await service.findCast(event.target.value);
+                    this.setState({
+                        cast: cast.slice(0, 50)
+                    })
+                }
             }, 250);
         }
 
@@ -126,10 +128,12 @@ class MovieDetails extends React.Component {
 
         if (!this.directorFunction) {
             this.directorFunction = debounce(async () => {
-                const directors = await service.findDirectors(event.target.value);
-                this.setState({
-                    directors: directors.slice(0, 50)
-                })
+                if (event && event.target && event.target.value) {
+                    const directors = await service.findDirectors(event.target.value);
+                    this.setState({
+                        directors: directors.slice(0, 50)
+                    })
+                }
             }, 250);
         }
 
@@ -144,10 +148,12 @@ class MovieDetails extends React.Component {
 
         if (!this.genreFunction) {
             this.genreFunction = debounce(async () => {
-                const genres = await service.findGenres(event.target.value);
-                this.setState({
-                    genres: genres.slice(0, 50)
-                })
+                if (event && event.target && event.target.value) {
+                    const genres = await service.findGenres(event.target.value);
+                    this.setState({
+                        genres: genres.slice(0, 50)
+                    })
+                }
             }, 250)
         }
 
@@ -158,6 +164,7 @@ class MovieDetails extends React.Component {
         const { cast } = this.state;
         return (
             <Autocomplete
+                autoComplete
                 multiple
                 includeInputInList
                 options={cast}
@@ -182,6 +189,7 @@ class MovieDetails extends React.Component {
         const { directors } = this.state;
         return (
             <Autocomplete
+                autoComplete
                 multiple
                 includeInputInList
                 onChange={this.handleDirectorChange}
@@ -206,6 +214,7 @@ class MovieDetails extends React.Component {
         const { genres } = this.state;
         return (
             <Autocomplete
+                autoComplete
                 includeInputInList
                 onChange={this.updateMovieGenre}
                 options={genres}
@@ -285,7 +294,7 @@ class MovieDetails extends React.Component {
                         <Button variant="contained" onClick={updateMovie} color="primary">
                             Save Changes
                         </Button>
-                        <Button variant="contained" onClick={deleteMovie} color="secondary">
+                        <Button disabled={!movie.id} variant="contained" onClick={deleteMovie} color="secondary">
                             Delete
                         </Button>
                     </DialogActions>

@@ -21,6 +21,23 @@ const useStyles = theme => ({
 });
 
 class MovieList extends React.Component {
+    newMovie = {
+        title: 'New Movie',
+        release_year: 2020,
+        genre: {
+            id: null,
+            genre: ''
+        },
+        origin: {
+            id: null,
+            origin: ''
+        },
+        cast: [],
+        directors: [],
+        wikipedia_link: '',
+        plot: ''
+    }
+
     constructor(props) {
         super(props);
         this.state = {
@@ -61,6 +78,8 @@ class MovieList extends React.Component {
     }
 
     handleClose = () => {
+        const { closeDialog } = this.props
+        closeDialog();
         this.setState({
             selectedMovie: null,
             detailsOpen: false
@@ -99,13 +118,19 @@ class MovieList extends React.Component {
 
     updateMovie = async () => {
         const { page, size, selectedMovie } = this.state;
-        await service.updateMovie(selectedMovie)
-        this.handleClose();
+        if (!selectedMovie.id) {
+            this.setState({
+                selectedMovie: await service.insertMovie(selectedMovie)
+            });
+        } else {
+            await service.updateMovie(selectedMovie);
+            this.handleClose();
+        }
         await this.loadMovies(page, size);
     }
 
     render() {
-        const { classes } = this.props;
+        const { classes, newDialogOpen } = this.props;
         const { page, size, detailsOpen, selectedMovie, movieCount } = this.state
         return (
             <React.Fragment>
@@ -136,8 +161,8 @@ class MovieList extends React.Component {
                         onChangeRowsPerPage={this.handleChangeRowsPerPage} />
                 </Paper>
                 <MovieDetails
-                    movie={selectedMovie}
-                    open={detailsOpen}
+                    movie={selectedMovie || this.newMovie}
+                    open={detailsOpen || newDialogOpen}
                     handleClose={this.handleClose}
                     movieUpdated={this.selectedMovieUpdated}
                     deleteMovie={this.deleteMovie}
