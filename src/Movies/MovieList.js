@@ -90,6 +90,13 @@ class MovieList extends React.Component {
         })
     }
 
+    deleteMovie = async () => {
+        const { page, size, selectedMovie } = this.state;
+        await service.deleteMovie(selectedMovie.id)
+        this.handleClose();
+        await this.loadMovies(page, size)
+    }
+
     render() {
         const { classes } = this.props;
         const { page, size, detailsOpen, selectedMovie, movieCount } = this.state
@@ -125,7 +132,8 @@ class MovieList extends React.Component {
                     movie={selectedMovie}
                     open={detailsOpen}
                     handleClose={this.handleClose}
-                    movieUpdated={this.selectedMovieUpdated} />
+                    movieUpdated={this.selectedMovieUpdated}
+                    deleteMovie={this.deleteMovie} />
             </React.Fragment>
         )
     }
