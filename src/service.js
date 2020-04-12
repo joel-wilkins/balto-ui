@@ -23,6 +23,16 @@ const service = {
         });
         return result.status;
     },
+    async insertMovie(movie) {
+        const result = await fetch(endpoints.movieRootUrl, {
+            method: 'POST',
+            body: JSON.stringify(movie),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        return await result.json();
+    },
     async getMovieCount() {
         const result = await fetch(endpoints.movieCount);
         return await result.json();
@@ -48,6 +58,7 @@ const service = {
 const rootUrl = 'http://localhost:5000';
 
 const endpoints = {
+    movieRootUrl: `${rootUrl}/movies`,
     movies: (page, pageSize) => `${rootUrl}/movies?page=${page}&page_size=${pageSize}`,
     movie: id => `${rootUrl}/movies/${id}`,
     movieCount: `${rootUrl}/movies/count`,
