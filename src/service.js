@@ -35,15 +35,26 @@ const service = {
         const result = await fetch(endpoints.findDirectors(query));
         return await result.json();
     },
+    async getOrigins() {
+        const result = await fetch(endpoints.getOrigins);
+        return await result.json();
+    },
+    async findGenres(query) {
+        const result = await fetch(endpoints.findGenres(query));
+        return await result.json();
+    }
 }
 
+const rootUrl = 'http://localhost:5000';
 
 const endpoints = {
-    movies: (page, pageSize) => `http://localhost:5000/movies?page=${page}&page_size=${pageSize}`,
-    movie: id => `http://localhost:5000/movies/${id}`,
-    movieCount: 'http://localhost:5000/movies/count',
-    findCast: query => `http://localhost:5000/cast?query=${query}`,
-    findDirectors: query => `http://localhost:5000/directors?query=${query}`,
+    movies: (page, pageSize) => `${rootUrl}/movies?page=${page}&page_size=${pageSize}`,
+    movie: id => `${rootUrl}/movies/${id}`,
+    movieCount: `${rootUrl}/movies/count`,
+    findCast: query => `${rootUrl}/cast?query=${query}`,
+    findDirectors: query => `${rootUrl}/directors?query=${query}`,
+    findGenres: query => `${rootUrl}/genres?query=${query}`,
+    getOrigins: `${rootUrl}/origins`
 }
 
 export default service;
